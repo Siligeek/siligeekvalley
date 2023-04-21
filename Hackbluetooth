@@ -1,0 +1,40 @@
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
+import android.util.Log;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.UUID;
+
+public class BluetoothHack {
+   public static void main(String[] args) {
+      BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+      if (bluetoothAdapter == null) {
+         Log.d("BluetoothHack", "Bluetooth not supported");
+         return;
+      }
+
+      if (!bluetoothAdapter.isEnabled()) {
+         Log.d("BluetoothHack", "Bluetooth is not enabled");
+         return;
+      }
+
+      for (BluetoothDevice device : bluetoothAdapter.getBondedDevices()) {
+         String name = device.getName();
+         String address = device.getAddress();
+         UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+         try {
+            BluetoothSocket socket = device.createRfcommSocketToServiceRecord(uuid);
+            Method m = device.getClass().getMethod("createRfcommSocket", new Class[] {int.class});
+            socket = (BluetoothSocket) m.invoke(device, 1);
+            socket.connect();
+            Log.d("BluetoothHack", "Connected to " + name + " at " + address);
+         } catch (IOException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            e.printStackTrace();
+         }
+      }
+   }
+}
+
